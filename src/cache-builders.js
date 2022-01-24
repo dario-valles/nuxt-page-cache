@@ -58,10 +58,12 @@ function ioredisCache(config) {
 function nodeRedis(config) {
     const redisStore = require("cache-manager-redis-store");
 
-    return cacheManager.caching({
+    const redisCache = cacheManager.caching({
         store: redisStore,
         ...config,
     });
+
+    return redisCache;
 }
 
 const cacheBuilders = {

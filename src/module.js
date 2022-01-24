@@ -17,6 +17,7 @@ function cleanIfNewVersion(cache, version) {
 }
 
 function tryStoreVersion(cache, version) {
+    console.log('try store version',!version || cache.versionSaved);
     if (!version || cache.versionSaved) return;
     return cache.setAsync('appVersion', version, {ttl: null})
         .then(() => { cache.versionSaved = true; });
@@ -56,23 +57,25 @@ module.exports = function pageCache(_nuxt, _options) {
 
     function defaultCacheKeyBuilder(route, context) {
         const hostname = context.req && context.req.hostname
-            || context.req && context.req.host
-            || context.req && context.req.headers && context.req.headers.host;
+        || context.req && context.req.host
+        || context.req && context.req.headers && context.req.headers.host;
 
+        console.log('defaultCacheKeyBuilder', hostname)
         if(!hostname) return;
 
         const cacheKey = config.useHostPrefix === true && hostname
             ? path.join(hostname, route)
             : route;
-
+        console.log({cacheKey})
         return cacheKey;
     }
 
     function buildCacheKey(route, context) {
+        console.log('in build cache')
         if (!isCacheFriendly(route, context)) return { key: null }
 
         const keyConfig = (config.key || defaultCacheKeyBuilder)(route, context);
-
+console.log({keyConfig})
         return {
             key: typeof keyConfig === 'object' ? keyConfig.key : keyConfig,
             ttl: typeof keyConfig === 'object' ? keyConfig.ttl : config.store.ttl,
@@ -83,13 +86,16 @@ module.exports = function pageCache(_nuxt, _options) {
     const setHeaderFunc = typeof config.setHeaderFunc === 'string' ? config.setHeaderFunc : 'setHeader';
     const currentVersion = config.version || this.options && this.options.version;
     const cache = makeCache(config.store);
+    console.log({cache})
     cleanIfNewVersion(cache, currentVersion);
 
     const renderer = nuxt.renderer;
     const renderRoute = renderer.renderRoute.bind(renderer);
-    renderer.renderRoute = function(route, context) {
+    renderer.renderRoute = function (route, context) {
+        console.log('in rendereRoute')
         // hopefully cache reset is finished up to this point.
         tryStoreVersion(cache, currentVersion);
+        console.log('after try store version')
 
         function setHeader(name, value) {
             if (name && typeof context.res[setHeaderFunc] === 'function') {
