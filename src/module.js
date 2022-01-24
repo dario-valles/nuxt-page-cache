@@ -60,22 +60,18 @@ module.exports = function pageCache(_nuxt, _options) {
         || context.req && context.req.host
         || context.req && context.req.headers && context.req.headers.host;
 
-        console.log('defaultCacheKeyBuilder', hostname)
         if(!hostname) return;
 
         const cacheKey = config.useHostPrefix === true && hostname
             ? path.join(hostname, route)
             : route;
-        console.log({cacheKey})
         return cacheKey;
     }
 
     function buildCacheKey(route, context) {
-        console.log('in build cache')
         if (!isCacheFriendly(route, context)) return { key: null }
 
         const keyConfig = (config.key || defaultCacheKeyBuilder)(route, context);
-console.log({keyConfig})
         return {
             key: typeof keyConfig === 'object' ? keyConfig.key : keyConfig,
             ttl: typeof keyConfig === 'object' ? keyConfig.ttl : config.store.ttl,
@@ -86,16 +82,13 @@ console.log({keyConfig})
     const setHeaderFunc = typeof config.setHeaderFunc === 'string' ? config.setHeaderFunc : 'setHeader';
     const currentVersion = config.version || this.options && this.options.version;
     const cache = makeCache(config.store);
-    console.log({cache})
     cleanIfNewVersion(cache, currentVersion);
 
     const renderer = nuxt.renderer;
     const renderRoute = renderer.renderRoute.bind(renderer);
     renderer.renderRoute = function (route, context) {
-        console.log('in rendereRoute')
         // hopefully cache reset is finished up to this point.
         tryStoreVersion(cache, currentVersion);
-        console.log('after try store version')
 
         function setHeader(name, value) {
             if (name && typeof context.res[setHeaderFunc] === 'function') {
@@ -115,13 +108,15 @@ console.log({keyConfig})
                 .then(function(result) {
                     setHeader(cacheStatusHeader, 'MISS')
                     if (!result.error && !result.redirected) {
+                        console.time('setCache')
                         cache.setAsync(cacheKey, serialize(result), { ttl });
+                        console.timeEnd('setCache')
                     }
                     return result;
                 });
         }
-
-        return cache.getAsync(cacheKey)
+        console.time("getAsync");
+        const cacheRes= cache.getAsync(cacheKey)
             .then(function (cachedResult) {
                 if (cachedResult) {
                     setHeader(cacheStatusHeader, 'HIT')
@@ -131,6 +126,8 @@ console.log({keyConfig})
                 return renderSetCache();
             })
             .catch(renderSetCache);
+        console.timeEnd("getAsync");
+        return cacheRes;
     };
 
     return cache;
