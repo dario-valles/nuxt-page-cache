@@ -1,21 +1,36 @@
-const Promise = require("bluebird");
-const cacheManager = require("cache-manager");
+const Promise = require('bluebird');
+const cacheManager = require('cache-manager');
 
 function memoryCache(config) {
     return cacheManager.caching({
-        store: "memory",
+        store: 'memory',
         ...config,
     });
 }
 
 function redisCache(config) {
-    const Redis = require("ioredis");
-    const client = new Redis({
-        retry_strategy() {},
-        ...config,
-    });
+    if (config && Array.isArray(config.configure)) {
+        const redis = require('redis');
+        const client = redis.createClient({
+            retry_strategy() {},
+            ...config,
+        });
+
+        Promise
+            .all(config.configure.map(options => new Promise((resolve, reject) => {
+                client.config('SET', ...options, function (err, result) {
+                    if (err || result !== 'OK') {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            })))
+            .then(() => client.quit());
+    }
+
     return cacheManager.caching({
-        store: client,
+        store: require('cache-manager-redis'),
         retry_strategy() {},
         ...config,
     });
@@ -23,7 +38,7 @@ function redisCache(config) {
 
 function memcachedCache(config) {
     return cacheManager.caching({
-        store: require("cache-manager-memcached-store"),
+        store: require('cache-manager-memcached-store'),
         ...config,
     });
 }
@@ -35,7 +50,16 @@ function multiCache(config) {
 
 function ioredisCache(config) {
     return cacheManager.caching({
-        store: require("cache-manager-ioredis"),
+        store: require('cache-manager-ioredis'),
+        ...config,
+    });
+}
+
+function nodeRedis(config) {
+    const redisStore = require("cache-manager-redis-store");
+
+    return cacheManager.caching({
+        store: redisStore,
         ...config,
     });
 }
@@ -46,12 +70,13 @@ const cacheBuilders = {
     redis: redisCache,
     memcached: memcachedCache,
     ioredis: ioredisCache,
+    node_redis: nodeRedis,
 };
 
-function makeCache(config = { type: "memory" }) {
+function makeCache(config = { type: 'memory' }) {
     const builder = cacheBuilders[config.type];
     if (!builder) {
-        throw new Error("Unknown store type: " + config.type);
+        throw new Error('Unknown store type: ' + config.type)
     }
 
     return Promise.promisifyAll(builder(config));

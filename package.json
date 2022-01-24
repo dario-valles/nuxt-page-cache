@@ -28,13 +28,13 @@
     "homepage": "https://github.com/kimyvgy/nuxt-page-cache#readme",
     "dependencies": {
         "bluebird": "^3.5.5",
-        "cache-manager": "^2.9.1"
+        "cache-manager": "^3.6.0"
     },
     "optionalDependencies": {
         "cache-manager-ioredis": "^2.1.0",
         "cache-manager-memcached-store": "^2.1.0",
         "cache-manager-redis": "^0.6.0",
-        "ioredis": "^4.28.3"
+        "cache-manager-redis-store": "^2.0.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.4.4",
