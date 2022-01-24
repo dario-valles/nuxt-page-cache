@@ -12,28 +12,10 @@ module.exports = {
                 return { _t: "func", _v: value() };
             }
 
-            // deflate(value, function (err, zippedValue) {
-            //     if (err) {
-            //         console.log("Error deflating!");
-            //         return;
-            //     }
-            //     return zippedValue.toString("base64");
-            // });
-
             return value;
         });
     },
     deserialize(jsoned) {
-        // jsoned =  inflate(
-        //                 Buffer.from(zippedValue, "base64"),
-        //                 (err, value) => {
-        //                     if (err) {
-        //                         console.log("Error inflating!");
-        //                         return;
-        //                     }
-        //                     return value;
-        //                 }
-        //             );
         return JSON.parse(jsoned, (key, value) => {
             if (value && value._v) {
                 if (value._t === "set") {

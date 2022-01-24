@@ -1,6 +1,8 @@
 const path = require('path');
 const {serialize, deserialize} = require('./serializer');
 const makeCache = require('./cache-builders');
+const zlib = require("zlib");
+
 
 function cleanIfNewVersion(cache, version) {
     if (!version) return;
@@ -109,7 +111,9 @@ module.exports = function pageCache(_nuxt, _options) {
                     setHeader(cacheStatusHeader, 'MISS')
                     if (!result.error && !result.redirected) {
                         console.time('setCache')
-                        cache.setAsync(cacheKey, serialize(result), { ttl });
+                        // compress serialize(result) with zlib
+                        cache.setAsync(cacheKey, zlib.deflateSync(serialize(result)), { ttl })
+                        // cache.setAsync(cacheKey, serialize(result), { ttl });
                         console.timeEnd('setCache')
                     }
                     return result;
@@ -119,7 +123,11 @@ module.exports = function pageCache(_nuxt, _options) {
         const cacheRes= cache.getAsync(cacheKey)
             .then(function (cachedResult) {
                 if (cachedResult) {
-                    setHeader(cacheStatusHeader, 'HIT')
+                    // decompress cachedResult with zlib
+                    setHeader(
+                        deserialize(zlib.inflateSync(cachedResult)),
+                        "HIT"
+                    );
                     return deserialize(cachedResult);
                 }
 
