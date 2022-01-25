@@ -112,28 +112,27 @@ module.exports = function pageCache(_nuxt, _options) {
                     if (!result.error && !result.redirected) {
                         console.time('setCache')
                         // compress serialize(result) with zlib
-                        cache.setAsync(cacheKey, zlib.deflateSync(serialize(result)), { ttl })
+                        cache.setAsync(cacheKey, zlib.brotliCompressSync(serialize(result)), { ttl })
                         // cache.setAsync(cacheKey, serialize(result), { ttl });
                         console.timeEnd('setCache')
                     }
                     return result;
                 });
         }
-        console.time("getAsync");
-        const cacheRes= cache.getAsync(cacheKey)
-            .then(function (cachedResult) {
-                if (cachedResult) {
+        return cache.getAsync(cacheKey)
+        .then(function (cachedResult) {
+            if (cachedResult) {
+                    console.time("getAsync");
                     // decompress cachedResult with zlib
-                    cachedResult = deserialize(zlib.inflateSync(cachedResult));
+                    cachedResult = deserialize(zlib.brotliDecompressSync(cachedResult));
                     setHeader(cacheStatusHeader, "HIT");
+                    console.timeEnd("getAsync");
                     return cachedResult;
                 }
 
                 return renderSetCache();
             })
             .catch(renderSetCache);
-        console.timeEnd("getAsync");
-        return cacheRes;
     };
 
     return cache;
