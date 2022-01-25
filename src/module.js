@@ -112,8 +112,8 @@ module.exports = function pageCache(_nuxt, _options) {
                     if (!result.error && !result.redirected) {
                         console.time('setCache')
                         // compress serialize(result) with zlib
-                        cache.setAsync(cacheKey, zlib.brotliCompressSync(serialize(result)), { ttl })
-                        // cache.setAsync(cacheKey, serialize(result), { ttl });
+                        // cache.setAsync(cacheKey, zlib.brotliCompressSync(serialize(result)), { ttl })
+                        cache.setAsync(cacheKey, serialize(result), { ttl });
                         console.timeEnd('setCache')
                     }
                     return result;
@@ -124,10 +124,10 @@ module.exports = function pageCache(_nuxt, _options) {
             if (cachedResult) {
                     console.time("getAsync");
                     // decompress cachedResult with zlib
-                    cachedResult = deserialize(zlib.brotliDecompressSync(cachedResult));
+                    // cachedResult = deserialize(zlib.brotliDecompressSync(cachedResult));
                     setHeader(cacheStatusHeader, "HIT");
                     console.timeEnd("getAsync");
-                    return cachedResult;
+                    return deserialize(cachedResult);
                 }
 
                 return renderSetCache();
