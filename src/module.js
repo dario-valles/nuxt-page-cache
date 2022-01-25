@@ -124,7 +124,7 @@ module.exports = function pageCache(_nuxt, _options) {
             if (cachedResult) {
                     console.time("getAsync");
                     // decompress cachedResult with zlib
-                    cachedResult = deserialize(zlib.createBrotliDecompress(cachedResult));
+                    // cachedResult = deserialize(zlib.createBrotliDecompress(cachedResult));
                     setHeader(cacheStatusHeader, "HIT");
                     console.timeEnd("getAsync");
                     return deserialize(cachedResult);
