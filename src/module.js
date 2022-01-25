@@ -124,10 +124,8 @@ module.exports = function pageCache(_nuxt, _options) {
             .then(function (cachedResult) {
                 if (cachedResult) {
                     // decompress cachedResult with zlib
-                    setHeader(
-                        deserialize(zlib.inflateSync(cachedResult)),
-                        "HIT"
-                    );
+                    cachedResult = deserialize(zlib.inflateSync(cachedResult));
+                    setHeader(cacheStatusHeader, "HIT");
                     return deserialize(cachedResult);
                 }
 
