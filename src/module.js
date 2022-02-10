@@ -87,8 +87,6 @@ module.exports = function pageCache(_nuxt, _options) {
       (this.options && this.options.purgeQueryParam);
    const purgeSecret =
        config.purgeSecret || (this.options && this.options.purgeSecret);
-   const variant =
-       config.variant || (this.options && this.options.variant);
 
     const cache = makeCache(config.store);
     cleanIfNewVersion(cache, currentVersion);
@@ -106,22 +104,9 @@ module.exports = function pageCache(_nuxt, _options) {
             console.log({matches})
             if (matches) {
                 const canPurge = matches[1] === purgeSecret;
-                cacheKey = cacheKey.replace(query, "").replace(/\?&/, "?");
-                if (cacheKey.lastIndexOf('?') !== -1) {
-                    cacheKey = cacheKey.substring(0, -1);
-                }
                 if (canPurge) {
                     console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
-                    if (variant) {
-                        const varianReqExp = new RegExp(`${variant}*/`);
-                        return cache.keysAsync(cacheKey.replace(varianReqExp, "")).then(keys => {
-                            console.log({keys})
-                            cache
-                                .delAsync(keys)
-                                .then(() => renderRoute(route, context));
-                        });
-                    }
                     return cache
                         .delAsync(cacheKey)
                         .then(() => renderRoute(route, context));
