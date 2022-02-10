@@ -110,7 +110,7 @@ module.exports = function pageCache(_nuxt, _options) {
                     console.log({ cacheKey })
                     const cacheKeyRegex = new RegExp(`^${cacheKey}*`);
                     console.log({ cacheKeyRegex });
-                    cache.keysAsync(cacheKeyRegex).then(keys => {
+                    cache.keysAsync(`${cacheKeyRegex}`).then(keys => {
                         console.log({ keys })
                         cache.delAsync(keys).then(() => renderRoute(route, context))
                     });
