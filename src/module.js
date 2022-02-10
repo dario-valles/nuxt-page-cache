@@ -101,22 +101,14 @@ module.exports = function pageCache(_nuxt, _options) {
             const query = new RegExp(`${purgeQueryParam}=([^&]*)`);
             const url = context.req.url;
             const matches = url.match(query);
-            console.log({matches})
             if (matches) {
                 const canPurge = matches[1] === purgeSecret;
                 if (canPurge) {
-                    console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
-                    console.log({ cacheKey })
-                    const cacheKeyRegex = new RegExp(`^${cacheKey}*`);
-                    console.log({ cacheKeyRegex });
-                    cache.keysAsync(`${cacheKeyRegex}`).then(keys => {
+                    cache.keysAsync(`${cacheKey}*`).then(keys => {
                         console.log({ keys })
                         cache.delAsync(keys).then(() => renderRoute(route, context))
                     });
-                    // return cache
-                    //     .delAsync(cacheKey)
-                    //     .then(() => renderRoute(route, context));
                 }
             }
         }
