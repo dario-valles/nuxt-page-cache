@@ -1,7 +1,6 @@
 const path = require('path');
 const {serialize, deserialize} = require('./serializer');
 const makeCache = require('./cache-builders');
-const zlib = require("zlib");
 
 
 function cleanIfNewVersion(cache, version) {
@@ -83,6 +82,12 @@ module.exports = function pageCache(_nuxt, _options) {
     const cacheStatusHeader = typeof config.cacheStatusHeader === 'string' && config.cacheStatusHeader;
     const setHeaderFunc = typeof config.setHeaderFunc === 'string' ? config.setHeaderFunc : 'setHeader';
     const currentVersion = config.version || this.options && this.options.version;
+    const purgeQueryParam =
+        config.purgeQueryParam ||
+      (this.options && this.options.purgeQueryParam);
+   const purgeSecret =
+       config.purgeSecret || (this.options && this.options.purgeSecret);
+
     const cache = makeCache(config.store);
     cleanIfNewVersion(cache, currentVersion);
 
@@ -105,14 +110,27 @@ module.exports = function pageCache(_nuxt, _options) {
             return renderRoute(route, context);
         }
 
+        const purgeParam = "purge";
+
+        if (purgeQueryParam && purgeSecret) {
+            const query = new RegExp(`${purgeParam}=([^&]*)`);
+            const url = context.req.url;
+            const matches = url.match(query);
+            if (matches) {
+                const canPurge = matches[1] === purgeSecret;
+                if (canPurge) {
+                    setHeader(cacheStatusHeader, 'PURGED')
+                    return cache.delAsync(cacheKey).then(() => renderRoute(route, context));
+                }
+            }
+        }
+
         function renderSetCache(){
             return renderRoute(route, context)
                 .then(function(result) {
                     setHeader(cacheStatusHeader, 'MISS')
                     if (!result.error && !result.redirected) {
                         console.time('setCache')
-                        // compress serialize(result) with zlib
-                        // cache.setAsync(cacheKey, zlib.createBrotliCompress(serialize(result)), { ttl })
                         cache.setAsync(cacheKey, serialize(result), { ttl });
                         console.timeEnd('setCache')
                     }
@@ -122,14 +140,9 @@ module.exports = function pageCache(_nuxt, _options) {
         return cache.getAsync(cacheKey)
         .then(function (cachedResult) {
             if (cachedResult) {
-                    console.time("getAsync");
-                    // decompress cachedResult with zlib
-                    // cachedResult = deserialize(zlib.createBrotliDecompress(cachedResult));
                     setHeader(cacheStatusHeader, "HIT");
-                    console.timeEnd("getAsync");
                     return deserialize(cachedResult);
                 }
-
                 return renderSetCache();
             })
             .catch(renderSetCache);
