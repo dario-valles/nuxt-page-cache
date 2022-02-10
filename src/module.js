@@ -87,6 +87,8 @@ module.exports = function pageCache(_nuxt, _options) {
       (this.options && this.options.purgeQueryParam);
    const purgeSecret =
        config.purgeSecret || (this.options && this.options.purgeSecret);
+   const variant =
+       config.variant || (this.options && this.options.variant);
 
     const cache = makeCache(config.store);
     cleanIfNewVersion(cache, currentVersion);
