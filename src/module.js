@@ -107,6 +107,7 @@ module.exports = function pageCache(_nuxt, _options) {
                 if (canPurge) {
                     console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
+                    console.log({cacheKey})
                     return cache
                         .delAsync(cacheKey)
                         .then(() => renderRoute(route, context));
