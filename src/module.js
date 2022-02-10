@@ -94,7 +94,7 @@ module.exports = function pageCache(_nuxt, _options) {
     const renderer = nuxt.renderer;
     const renderRoute = renderer.renderRoute.bind(renderer);
     renderer.renderRoute = function (route, context) {
-        const { key: cacheKey, ttl } = buildCacheKey(route, context);
+        let { key: cacheKey, ttl } = buildCacheKey(route, context);
 
         // purge cache if requested
         if (purgeQueryParam && purgeSecret) {
