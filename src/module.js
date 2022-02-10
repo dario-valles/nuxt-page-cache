@@ -103,12 +103,13 @@ module.exports = function pageCache(_nuxt, _options) {
                 const canPurge = matches[1] === purgeSecret;
                 cacheKey = cacheKey.replace(query, "").replace(/\?&/, "?");
                 if (canPurge) {
+                    console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
-                    //local.elsecinema.com/-smartphone-en
                     if (variant) {
                         const varianReqExp = new RegExp(`${variant}*/`);
                         cacheKey = cache.keysAsync(cacheKey.replace(varianReqExp, ""));
                     }
+                    console.log({cacheKey})
                     return cache
                         .delAsync(cacheKey)
                         .then(() => renderRoute(route, context));
