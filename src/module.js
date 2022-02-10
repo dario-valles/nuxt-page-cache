@@ -120,7 +120,13 @@ module.exports = function pageCache(_nuxt, _options) {
                 const canPurge = matches[1] === purgeSecret;
                 if (canPurge) {
                     setHeader(cacheStatusHeader, 'PURGED')
-                    return cache.delAsync(cacheKey).then(() => renderRoute(route, context));
+                    return cache
+                        .delAsync(
+                            cacheKey
+                                .replace(query, "")
+                                .replace(/\?&/, "?")
+                        )
+                        .then(() => renderRoute(route, context));
                 }
             }
         }
