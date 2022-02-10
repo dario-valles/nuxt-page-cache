@@ -112,9 +112,13 @@ module.exports = function pageCache(_nuxt, _options) {
                     setHeader(cacheStatusHeader, "PURGED");
                     if (variant) {
                         const varianReqExp = new RegExp(`${variant}*/`);
-                        cacheKey = cache.keysAsync(cacheKey.replace(varianReqExp, ""));
+                        return cache.keysAsync(cacheKey.replace(varianReqExp, "")).then(keys => {
+                            console.log({keys})
+                            cache
+                                .delAsync(keys)
+                                .then(() => renderRoute(route, context));
+                        });
                     }
-                    console.log({cacheKey})
                     return cache
                         .delAsync(cacheKey)
                         .then(() => renderRoute(route, context));
