@@ -24,7 +24,7 @@ function tryStoreVersion(cache, version) {
         .then(() => { cache.versionSaved = true; });
 }
 
-module.exports = function pageCache(_nuxt, _options) {
+module.exports = async function pageCache(_nuxt, _options) {
     // used as a nuxt module, only config is provided as argument
     // and nuxt instance will be provided as this context
     const isNuxtModule = arguments.length < 2 && this.nuxt
@@ -107,6 +107,9 @@ module.exports = function pageCache(_nuxt, _options) {
             if (matches) {
                 const canPurge = matches[1] === purgeSecret;
                 cacheKey = cacheKey.replace(query, "").replace(/\?&/, "?");
+                if (cacheKey.lastIndexOf('?') !== -1) {
+                    cacheKey = cacheKey.substring(0, -1);
+                }
                 if (canPurge) {
                     console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
