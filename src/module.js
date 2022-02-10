@@ -107,10 +107,16 @@ module.exports = function pageCache(_nuxt, _options) {
                 if (canPurge) {
                     console.log({canPurge})
                     setHeader(cacheStatusHeader, "PURGED");
-                    console.log({cacheKey})
-                    return cache
-                        .delAsync(cacheKey)
-                        .then(() => renderRoute(route, context));
+                    console.log({ cacheKey })
+                    const cacheKeyRegex = new RegExp(`^${cacheKey}*`);
+                    console.log({ cacheKeyRegex });
+                    cache.keysAsync(cacheKeyRegex).then(keys => {
+                        console.log({ keys })
+                        cache.delAsync(keys).then(() => renderRoute(route, context))
+                    });
+                    // return cache
+                    //     .delAsync(cacheKey)
+                    //     .then(() => renderRoute(route, context));
                 }
             }
         }
