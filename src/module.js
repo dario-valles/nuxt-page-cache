@@ -24,7 +24,7 @@ function tryStoreVersion(cache, version) {
         .then(() => { cache.versionSaved = true; });
 }
 
-module.exports = async function pageCache(_nuxt, _options) {
+module.exports = function pageCache(_nuxt, _options) {
     // used as a nuxt module, only config is provided as argument
     // and nuxt instance will be provided as this context
     const isNuxtModule = arguments.length < 2 && this.nuxt
