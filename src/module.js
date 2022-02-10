@@ -94,11 +94,13 @@ module.exports = function pageCache(_nuxt, _options) {
     const renderer = nuxt.renderer;
     const renderRoute = renderer.renderRoute.bind(renderer);
     renderer.renderRoute = function (route, context) {
+        console.log({ purgeQueryParam }, { purgeSecret });
         // purge cache if requested
         if (purgeQueryParam && purgeSecret) {
             const query = new RegExp(`${purgeParam}=([^&]*)`);
             const url = context.req.url;
             const matches = url.match(query);
+            console.log({matches})
             if (matches) {
                 const canPurge = matches[1] === purgeSecret;
                 cacheKey = cacheKey.replace(query, "").replace(/\?&/, "?");
