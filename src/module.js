@@ -97,7 +97,7 @@ module.exports = function pageCache(_nuxt, _options) {
         console.log({ purgeQueryParam }, { purgeSecret });
         // purge cache if requested
         if (purgeQueryParam && purgeSecret) {
-            const query = new RegExp(`${purgeParam}=([^&]*)`);
+            const query = new RegExp(`${purgeQueryParam}=([^&]*)`);
             const url = context.req.url;
             const matches = url.match(query);
             console.log({matches})
