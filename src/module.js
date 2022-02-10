@@ -94,7 +94,8 @@ module.exports = function pageCache(_nuxt, _options) {
     const renderer = nuxt.renderer;
     const renderRoute = renderer.renderRoute.bind(renderer);
     renderer.renderRoute = function (route, context) {
-        console.log({ purgeQueryParam }, { purgeSecret });
+        const { key: cacheKey, ttl } = buildCacheKey(route, context);
+
         // purge cache if requested
         if (purgeQueryParam && purgeSecret) {
             const query = new RegExp(`${purgeQueryParam}=([^&]*)`);
@@ -127,8 +128,6 @@ module.exports = function pageCache(_nuxt, _options) {
                 context.res[setHeaderFunc](name, value);
             }
         }
-
-        const { key: cacheKey, ttl } = buildCacheKey(route, context)
 
         if (!cacheKey || !renderer.renderer.isReady) {
             setHeader(cacheStatusHeader, 'NONE')
