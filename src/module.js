@@ -105,10 +105,9 @@ module.exports = function pageCache(_nuxt, _options) {
                 const canPurge = matches[1] === purgeSecret;
                 if (canPurge) {
                     setHeader(cacheStatusHeader, "PURGED");
-                    cache.keysAsync(`${cacheKey}*`).then(keys => {
-                        console.log({ keys })
+                    return cache.keysAsync(`${cacheKey}*`).then(keys => keys && keys.length &&
                         cache.delAsync(keys).then(() => renderRoute(route, context))
-                    });
+                    );
                 }
             }
         }
@@ -140,14 +139,14 @@ module.exports = function pageCache(_nuxt, _options) {
                 });
         }
         return cache.getAsync(cacheKey)
-        .then(function (cachedResult) {
-            if (cachedResult) {
-                    setHeader(cacheStatusHeader, "HIT");
-                    return deserialize(cachedResult);
-                }
-                return renderSetCache();
-            })
-            .catch(renderSetCache);
+            .then(function (cachedResult) {
+                if (cachedResult) {
+                        setHeader(cacheStatusHeader, "HIT");
+                        return deserialize(cachedResult);
+                    }
+                    return renderSetCache();
+                })
+                .catch(renderSetCache);
     };
 
     return cache;
